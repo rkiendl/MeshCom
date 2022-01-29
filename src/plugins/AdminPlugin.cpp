@@ -133,6 +133,20 @@ void AdminPlugin::handleSetOwner(const User &o)
     if (*o.long_name) {
         changed |= strcmp(owner.long_name, o.long_name);
         strcpy(owner.long_name, o.long_name);
+        if(owner.is_licensed) { //RKE copy portion of call oe6[rke]
+            //failsave first
+            short_call[0] = '0';
+            short_call[1] = '0';
+            short_call[2] = '0';
+            try {
+                short_call[0] = owner.long_name[3];
+                short_call[1] = owner.long_name[4];
+                short_call[2] = owner.long_name[5];
+            }
+            catch(...) {
+                DEBUG_MSG("Error creating licensed short call\n")
+            }
+        }
     }
     if (*o.short_name) {
         changed |= strcmp(owner.short_name, o.short_name);

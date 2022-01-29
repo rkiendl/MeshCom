@@ -238,9 +238,14 @@ static int gap_event(struct ble_gap_event *event, void *arg)
                 DEBUG_MSG("User has overridden passkey or no display available\n");
                 pkey.passkey = defaultBLEPin;
             } else {
-                DEBUG_MSG("Using random passkey\n");
-                pkey.passkey = random(
-                    100000, 999999); // This is the passkey to be entered on peer - we pick a number >100,000 to ensure 6 digits
+                if(owner.is_licensed && !radioConfig.preferences.is_router){
+                    DEBUG_MSG("Set fixed key for meshcom");
+                    pkey.passkey = 000000; //RKE: possible security risk
+                }
+                else {
+                    DEBUG_MSG("Using random passkey\n");
+                    pkey.passkey = random(100000, 999999); // This is the passkey to be entered on peer - we pick a number >100,000 to ensure 6 digits
+                }
             }
             DEBUG_MSG("*** Enter passkey %d on the peer side ***\n", pkey.passkey);
 

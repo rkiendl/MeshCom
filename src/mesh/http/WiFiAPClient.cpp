@@ -89,8 +89,9 @@ static int32_t reconnectWiFi()
             DEBUG_MSG("NTP Update failed\n");
         }
     }
-
-    return 30 * 1000; // every 30 seconds
+    int reti_val = 30*1000;
+    if(owner.is_licensed && radioConfig.preferences.is_router) reti_val = 5*1000; //RKE 5sec reconnect instead 30sec
+    return reti_val;
 }
 
 static Periodic *wifiReconnect;
