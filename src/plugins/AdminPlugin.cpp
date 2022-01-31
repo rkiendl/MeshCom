@@ -16,6 +16,8 @@ AdminPlugin *adminPlugin;
 /// Also, to make setting work correctly, if someone tries to set a string to this reserved value we assume they don't really want a change.
 static const char *secretReserved = "sekrit";
 
+char short_call[3]; // BIA - holder for afu short call
+
 /// If buf is !empty, change it to secret
 static void hideSecret(char *buf) {
     if(*buf) {
@@ -130,32 +132,37 @@ void AdminPlugin::handleSetOwner(const User &o)
 {
     int changed = 0;
 
-    if (*o.long_name) {
+    if (*o.long_name) { //set via gui or cli the set-owner
         changed |= strcmp(owner.long_name, o.long_name);
-        strcpy(owner.long_name, o.long_name);
-        if(owner.is_licensed) { //RKE copy portion of call oe6[rke]
-            //failsave first
-            short_call[0] = '0';
-            short_call[1] = '0';
-            short_call[2] = '0';
-            try {
-                short_call[0] = owner.long_name[3];
-                short_call[1] = owner.long_name[4];
-                short_call[2] = owner.long_name[5];
-            }
-            catch(...) {
-                DEBUG_MSG("Error creating licensed short call\n")
-            }
+
+        //RKE BIA copy portion of call oe6[rke] 
+        short_call[0] = owner.long_name[3]; 
+        short_call[1] = owner.long_name[4];
+        short_call[2] = owner.long_name[5];  
+
+        if(owner.is_licensed != o.is_licensed) { //toggle condition, TODO beautify        
+            strcpy(owner.short_name, short_call);
+        }
+        else {
+            strcpy(owner.long_name, o.long_name);
         }
     }
     if (*o.short_name) {
         changed |= strcmp(owner.short_name, o.short_name);
-        strcpy(owner.short_name, o.short_name);
+
+        //RKE BIA copy portion of call oe6[rke] 
+        if(owner.is_licensed != o.is_licensed) {  //toggle condition, TODO beautify        
+            strcpy(owner.short_name, short_call);
+        }
+        else {
+            strcpy(owner.short_name, o.short_name); 
+        }        
     }
     if (*o.id) {
         changed |= strcmp(owner.id, o.id);
         strcpy(owner.id, o.id);
     }
+
     if (owner.is_licensed != o.is_licensed) {
         changed = 1;
         owner.is_licensed = o.is_licensed;

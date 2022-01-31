@@ -132,7 +132,22 @@ int32_t PositionPlugin::runOnce()
 
     // We limit our GPS broadcasts to a max rate
     uint32_t now = millis();
-    if (lastGpsSend == 0 || now - lastGpsSend >= getPref_position_broadcast_secs() * 1000) {
+    
+    //preference in sec
+    uint32_t myGPSperiode = getPref_position_broadcast_secs();
+    
+    // RKE if we are a MeshCom we send our position every 15 min
+    if(owner.is_licensed) myGPSperiode = 15 * 60;
+
+    // RKE change from const to variable with decision matrix
+    // The minimum distance to travel before we are able to send a new position packet.
+    uint32_t distanceTravelMinimum = 30;
+
+    // The minimum time that would pass before we are able to send a new position packet.
+    uint32_t timeTravelMinimum = 30;
+
+    // Standard GPS mode
+    if (lastGpsSend == 0 || now - lastGpsSend >= myGPSperiode * 1000) {
 
         // Only send packets if the channel is less than 40% utilized.
         if (airTime->channelUtilizationPercent() < 40) {
@@ -147,26 +162,33 @@ int32_t PositionPlugin::runOnce()
             currentGeneration = radioGeneration;
 
             DEBUG_MSG("Sending pos@%x:6 to mesh (wantReplies=%d)\n", node->position.pos_timestamp, requestReplies);
-
-            sendOurPosition(NODENUM_BROADCAST, requestReplies);
+            if(owner.is_licensed){
+                sendOurPosition(NODENUM_BROADCAST, false); //send position and DONT ASK OTHERS THEIRS!
+            }
+            else {
+                sendOurPosition(NODENUM_BROADCAST, requestReplies);
+            }
 
         } else {
             DEBUG_MSG("Channel utilization is >50 percent. Skipping this opportunity to send.\n");
         }
 
-    } else if (radioConfig.preferences.position_broadcast_smart == true) {
+    } else if (radioConfig.preferences.position_broadcast_smart == true) { //Smart GPS, enabled by param
 
         // Only send packets if the channel is less than 40% utilized.
         if (airTime->channelUtilizationPercent() < 40) {
 
             NodeInfo *node2 = service.refreshMyNodeInfo(); // should guarantee there is now a position
-
+            
+            // RKE change from const to variable with decision matrix
             if (node2->has_position && (node2->position.latitude_i != 0 || node2->position.longitude_i != 0)) {
-                // The minimum distance to travel before we are able to send a new position packet.
-                const uint32_t distanceTravelMinimum = 30;
-
-                // The minimum time that would pass before we are able to send a new position packet.
-                const uint32_t timeTravelMinimum = 30;
+                if(owner.is_licensed) {
+                    // The minimum distance to travel before we are able to send a new position packet.
+                    distanceTravelMinimum = 500; //500m
+                
+                    // The minimum time that would pass before we are able to send a new position packet.
+                    timeTravelMinimum = 600; //5 mins = 600sec
+                }
 
                 // Determine the distance in meters between two points on the globe
                 float distance = GeoCoord::latLongToMeter(lastGpsLatitude * 1e-7, lastGpsLongitude * 1e-7,

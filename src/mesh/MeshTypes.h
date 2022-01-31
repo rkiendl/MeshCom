@@ -34,7 +34,8 @@ enum RxSource {
 #define HOP_MAX 7
 
 /// We normally just use max 3 hops for sending reliable messages
-#define HOP_RELIABLE 3
+//#define HOP_RELIABLE 3
+#define HOP_RELIABLE 5 //RKE BIA core idea of MeshCom to have 5 hops for message
 
 typedef int ErrorCode;
 

@@ -31,13 +31,18 @@ void MQTT::onPublish(char *topic, byte *payload, unsigned int length)
         else {
             if (e.packet) {
                 DEBUG_MSG("Received MQTT topic %s, len=%u\n", topic, length);
-                MeshPacket *p = packetPool.allocCopy(*e.packet);
+                try { //RKE try catch to prevent reboot
+                    MeshPacket *p = packetPool.allocCopy(*e.packet);
 
-                // ignore messages sent by us or if we don't have the channel key
-                if (router && p->from != nodeDB.getNodeNum() && perhapsDecode(p))
-                    router->enqueueReceivedMessage(p);
-                else
-                    packetPool.release(p);
+                    // ignore messages sent by us or if we don't have the channel key
+                    if (router && p->from != nodeDB.getNodeNum() && perhapsDecode(p))
+                        router->enqueueReceivedMessage(p);
+                    else
+                        packetPool.release(p);
+                }
+                catch(...) {
+                    DEBUG_MSG("Got Exception by processing message from mqtt\n");
+                }
             }
         }
 

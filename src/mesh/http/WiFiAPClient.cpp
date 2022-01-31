@@ -90,7 +90,7 @@ static int32_t reconnectWiFi()
         }
     }
     int reti_val = 30*1000;
-    if(owner.is_licensed && radioConfig.preferences.is_router) reti_val = 5*1000; //RKE 5sec reconnect instead 30sec
+    if(owner.is_licensed && radioConfig.preferences.is_router) reti_val = 5*1000; //RKE BIA 5sec reconnect instead 30sec
     return reti_val;
 }
 

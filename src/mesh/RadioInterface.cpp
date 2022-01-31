@@ -15,15 +15,18 @@
     {                                                                                                                            \
         RegionCode_##name, num_ch, power_limit, freq, spacing, #name                                                             \
     }
-
+    
 const RegionInfo regions[] = {
-    RDEF(US, 903.08f, 2.16f, 13, 0), RDEF(EU433, 433.175f, 0.2f, 8, 0), RDEF(EU865, 865.2f, 0.3f, 10, 0),
+    RDEF(US, 903.08f, 2.16f, 13, 0), 
+    RDEF(TW, 432.550f, 0.2f, 2, 0),  // RKE 2 Channels, 432,550 starting -> Band Data in OE, borrowing TW until protobuf commit TODO
+    RDEF(EU433, 433.175f, 0.2f, 8, 0), 
+    RDEF(EU865, 865.2f, 0.3f, 10, 0),
     RDEF(CN, 470.0f, 2.0f, 20, 0),
     RDEF(JP, 920.0f, 0.5f, 10, 13),    // See https://github.com/meshtastic/Meshtastic-device/issues/346 power level 13
     RDEF(ANZ, 916.0f, 0.5f, 20, 0),    // AU/NZ channel settings 915-928MHz
     RDEF(KR, 921.9f, 0.2f, 8, 0),      // KR channel settings (KR920-923) Start from TTN download channel
                                        // freq. (921.9f is for download, others are for uplink)
-    RDEF(TW, 923.0f, 0.2f, 10, 0),     // TW channel settings (AS2 bandplan 923-925MHz)
+    //RDEF(TW, 923.0f, 0.2f, 10, 0),     // TW channel settings (AS2 bandplan 923-925MHz)
     RDEF(RU, 868.9f, 0.2f, 2, 20),     // See notes below
     RDEF(Unset, 903.08f, 2.16f, 13, 0) // Assume US freqs if unset, Must be last
 };
