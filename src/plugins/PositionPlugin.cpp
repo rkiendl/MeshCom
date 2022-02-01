@@ -163,7 +163,7 @@ int32_t PositionPlugin::runOnce()
 
             DEBUG_MSG("Sending pos@%x:6 to mesh (wantReplies=%d)\n", node->position.pos_timestamp, requestReplies);
             if(owner.is_licensed){
-                sendOurPosition(NODENUM_BROADCAST, false); //send position and DONT ASK OTHERS THEIRS!
+                sendOurPosition(NODENUM_BROADCAST, requestReplies); //send position and DONT ASK OTHERS THEIRS!
             }
             else {
                 sendOurPosition(NODENUM_BROADCAST, requestReplies);
