@@ -31,18 +31,15 @@ void MQTT::onPublish(char *topic, byte *payload, unsigned int length)
         else {
             if (e.packet) {
                 DEBUG_MSG("Received MQTT topic %s, len=%u\n", topic, length);
-                try { //RKE try catch to prevent reboot
-                    MeshPacket *p = packetPool.allocCopy(*e.packet);
+                
+                MeshPacket *p = packetPool.allocCopy(*e.packet);
 
-                    // ignore messages sent by us or if we don't have the channel key
-                    if (router && p->from != nodeDB.getNodeNum() && perhapsDecode(p))
-                        router->enqueueReceivedMessage(p);
-                    else
-                        packetPool.release(p);
-                }
-                catch(...) {
-                    DEBUG_MSG("Got Exception by processing message from mqtt\n");
-                }
+                // ignore messages sent by us or if we don't have the channel key
+                if (router && p->from != nodeDB.getNodeNum() && perhapsDecode(p))
+                    router->enqueueReceivedMessage(p);
+                else
+                    packetPool.release(p);
+            
             }
         }
 
@@ -167,7 +164,7 @@ int32_t MQTT::runOnce()
             return 5000; // If we don't want connection now, check again in 5 secs
     } else {
         // we are connected to server, check often for new requests on the TCP port
-        if (!wantConnection) {
+        if (!wantConnection && !owner.is_licensed && !radioConfig.preferences.is_router) { // RKE dont drop MeshCom Gateways
             DEBUG_MSG("MQTT link not needed, dropping\n");
             pubSub.disconnect();
         }
@@ -191,12 +188,12 @@ void MQTT::onSend(const MeshPacket &mp, ChannelIndex chIndex)
         env.packet = (MeshPacket *)&mp;
 
         // FIXME - this size calculation is super sloppy, but it will go away once we dynamically alloc meshpackets
-        static uint8_t bytes[MeshPacket_size + 256]; //RKE change from 64 to 256 for having buffer big enough
+        static uint8_t bytes[MeshPacket_size + 64]; // RKE reverting from 256 to 64
         size_t numBytes = pb_encode_to_bytes(bytes, sizeof(bytes), ServiceEnvelope_fields, &env);
 
         String topic = cryptTopic + channelId + "/" + owner.id;
         DEBUG_MSG("publish %s, %u bytes\n", topic.c_str(), numBytes);
-
+        // RKE ToDo last chance to prevent drop into mqtt central server queue
         pubSub.publish(topic.c_str(), bytes, numBytes, false);
     }
 }
