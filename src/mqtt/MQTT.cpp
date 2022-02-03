@@ -188,7 +188,7 @@ void MQTT::onSend(const MeshPacket &mp, ChannelIndex chIndex)
         env.packet = (MeshPacket *)&mp;
 
         // FIXME - this size calculation is super sloppy, but it will go away once we dynamically alloc meshpackets
-        static uint8_t bytes[MeshPacket_size + 64]; // RKE reverting from 256 to 64
+        static uint8_t bytes[MeshPacket_size + 64];
         size_t numBytes = pb_encode_to_bytes(bytes, sizeof(bytes), ServiceEnvelope_fields, &env);
 
         String topic = cryptTopic + channelId + "/" + owner.id;

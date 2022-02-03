@@ -23,7 +23,8 @@ DNSServer dnsServer;
 
 // NTP
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "0.pool.ntp.org");
+// NTPClient timeClient(ntpUDP, "0.pool.ntp.org"); //Mestastic default
+NTPClient timeClient(ntpUDP, "44.143.250.30"); // RKE meshCom has own ntp infrastructure TODO make pb param, temp allhau as ntp servant
 
 uint8_t wifiDisconnectReason = 0;
 
@@ -89,8 +90,9 @@ static int32_t reconnectWiFi()
             DEBUG_MSG("NTP Update failed\n");
         }
     }
-    int reti_val = 30*1000;
-    if(owner.is_licensed && radioConfig.preferences.is_router) reti_val = 5*1000; //RKE BIA 5sec reconnect instead 30sec
+    int reti_val = 30000; //mestastic default reconnect 30s
+    if(owner.is_licensed && radioConfig.preferences.is_router) reti_val = 1000; //RKE BIA 1s reconnect instead 30s
+
     return reti_val;
 }
 
@@ -218,7 +220,7 @@ bool initWifi(bool forceSoftAP)
 
                 dnsServer.start(53, "*", apIP);
 
-            } else {
+            } else {  // RKE Wifi Client mode
                 uint8_t dmac[6];
                 getMacAddr(dmac);
                 sprintf(ourHost, "Meshtastic-%02x%02x", dmac[4], dmac[5]);
